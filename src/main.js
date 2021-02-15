@@ -1,9 +1,7 @@
-import {combineReducers,createStore,bindActionCreators} from 'redux';
-import React,{useState} from 'react';
-import blessed from 'blessed';
-import {render} from 'react-blessed';
-import {connect,Provider} from 'react-redux';
-import {useImmer} from 'use-immer'
+import { useImmer } from "use-immer";
+import React, { useState } from "react";
+import blessed from "blessed";
+import { render } from "react-blessed";
 
 function Screen() {
   const screen = blessed.screen({
@@ -15,27 +13,6 @@ function Screen() {
     this.destroy();
   });
   return screen;
-}
-
-const RESET = "ACTION/RESET";
-
-const INC = "ACTION/INC";
-
-const DEC = "ACTION/DEC";
-
-function counter_reducer(count, action) {
-  if (count === undefined) {
-    return 0;
-  }
-  if (action.type == INC) {
-    return (count + 1) % 10;
-  } else if (action.type == DEC) {
-    return (count + 9) % 10;
-  } else if (action.type == RESET) {
-    return 0;
-  } else {
-    return count;
-  }
 }
 
 function Counter(props) {
@@ -58,7 +35,7 @@ function Counter(props) {
         }}
         mouse={true}
         padding={{ top: 1, right: 1, bottom: 1, left: 1 }}
-        style={{ blink: true, bg: "green", focus: { bold: true } }}
+        style={{ bg: "green", focus: { bold: true } }}
       ></button>
       <box top={8}>
         <button
@@ -81,37 +58,16 @@ function Counter(props) {
           }}
           mouse={true}
           padding={{ top: 1, right: 1, bottom: 1, left: 1 }}
-          style={{
-            blink: true,
-            fg: "white",
-            bg: "blue",
-            focus: { bold: true },
-          }}
+          style={{ fg: "white", bg: "blue", focus: { bold: true } }}
         ></button>
       </box>
     </box>
   );
 }
 
-function main_reducer(state, action) {
-  console.log("MAIN", state, action);
-  return { counter: counter_reducer(state.counter, action) };
-}
-
-function action_reset() {
-  return { type: RESET };
-}
-
-function action_inc() {
-  return { type: INC };
-}
-
-function action_dec() {
-  return { type: DEC };
-}
-
 function App() {
   const [global, updateGlobal] = useImmer({ counter: 0 });
+  useEffect()
   return (
     <box
       label="Tui Counter Immer"
@@ -151,48 +107,6 @@ function App() {
 
 function main() {
   render(<App></App>, Screen());
-}
-
-function AppContainer(props) {
-  return (
-    <box
-      label="Tui Counter Redux"
-      border="line"
-      style={{ border: { fg: "green" } }}
-    >
-      <box left={5}>
-        <box top={3}>
-          <text top={-1} left={1}>
-            COUNTER
-          </text>
-          <Counter
-            state={props.state}
-            doDec={props.doDec}
-            doInc={props.doInc}
-            doReset={props.doReset}
-          ></Counter>
-        </box>
-      </box>
-    </box>
-  );
-}
-
-function mapStateToProps(state) {
-  return { state: state.counter };
-}
-
-function mapDispatchToProps(dispatch) {
-  return {
-    doInc: function () {
-      dispatch(action_inc());
-    },
-    doDec: function () {
-      dispatch(action_dec());
-    },
-    doReset: function () {
-      dispatch(action_reset());
-    },
-  };
 }
 
 main()
