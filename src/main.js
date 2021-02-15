@@ -67,7 +67,6 @@ function Counter(props) {
 
 function App() {
   const [global, updateGlobal] = useImmer({ counter: 0 });
-  useEffect()
   return (
     <box
       label="Tui Counter Immer"
