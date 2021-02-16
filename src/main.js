@@ -1,7 +1,8 @@
 import { useImmer } from "use-immer";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import blessed from "blessed";
 import { render } from "react-blessed";
+import _ from "lodash";
 
 function Screen() {
   const screen = blessed.screen({
@@ -28,6 +29,38 @@ function Counter(props) {
       <button
         top={2}
         left={16}
+        content="START"
+        onPress={function () {
+          props.fn.start();
+        }}
+        shrink={true}
+        mouse={true}
+        padding={{ top: 1, right: 1, bottom: 1, left: 1 }}
+        style={{
+          bg: null == props.global.timer ? "green" : "black",
+          fg: null == props.global.timer ? "white" : "gray",
+          focus: { bold: true },
+        }}
+      ></button>
+      <button
+        top={2}
+        left={26}
+        content="STOP"
+        shrink={true}
+        onPress={function () {
+          props.fn.stop();
+        }}
+        mouse={true}
+        padding={{ top: 1, right: 1, bottom: 1, left: 1 }}
+        style={{
+          bg: null != props.global.timer ? "red" : "black",
+          fg: null != props.global.timer ? "white" : "gray",
+          focus: { bold: true },
+        }}
+      ></button>
+      <button
+        top={2}
+        left={36}
         content="RESET"
         shrink={true}
         onPress={function () {
@@ -35,7 +68,7 @@ function Counter(props) {
         }}
         mouse={true}
         padding={{ top: 1, right: 1, bottom: 1, left: 1 }}
-        style={{ bg: "green", focus: { bold: true } }}
+        style={{ bg: "yellow", fg: "black", focus: { bold: true } }}
       ></button>
       <box top={8}>
         <button
@@ -61,12 +94,18 @@ function Counter(props) {
           style={{ fg: "white", bg: "blue", focus: { bold: true } }}
         ></button>
       </box>
+      <box top={14}></box>
     </box>
   );
 }
 
 function App() {
-  const [global, updateGlobal] = useImmer({ counter: 0 });
+  const [global, updateGlobal] = useImmer({ counter: 0, timer: null });
+  const incFn = function () {
+    updateGlobal(function (draft) {
+      draft.counter++;
+    });
+  };
   return (
     <box
       label="Tui Counter Immer"
@@ -76,16 +115,12 @@ function App() {
       <box left={5}>
         <box top={3}>
           <text top={-1} left={1}>
-            COUNTER
+            {"COUNTER" + (null == global.timer ? " - stopped" : " - started")}
           </text>
           <Counter
             global={global}
             fn={{
-              inc: function () {
-                updateGlobal(function (draft) {
-                  draft.counter++;
-                });
-              },
+              inc: incFn,
               reset: function () {
                 updateGlobal(function (draft) {
                   draft.counter = 0;
@@ -94,6 +129,21 @@ function App() {
               dec: function () {
                 updateGlobal(function (draft) {
                   draft.counter--;
+                });
+              },
+              stop: function () {
+                updateGlobal(function (draft) {
+                  if (!null != draft.timer) {
+                    clearInterval(draft.timer);
+                    draft.timer = null;
+                  }
+                });
+              },
+              start: function () {
+                updateGlobal(function (draft) {
+                  if (null == draft.timer) {
+                    draft.timer = setInterval(incFn, 1000);
+                  }
                 });
               },
             }}
